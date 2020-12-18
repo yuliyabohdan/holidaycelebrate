@@ -11,6 +11,7 @@ from datetime import datetime
 
 
 bot = telebot.TeleBot(config.token)
+server = Flask(__name__)
 
 pict = [
     'https://focusu.com/wp-content/uploads/2017/03/team-celebration-clipart.jpg',
@@ -178,9 +179,18 @@ def cmd_sample_message(message):
     bot.send_photo(message.chat.id, pict[randint(0, 5)])
 
 
+@server.route('/' + TOKEN, methods=['POST'])
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
 
-if __name__ == '__main__':
-    bot.infinity_polling()
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url='https://dashboard.heroku.com/apps/holidaycelebrate' + TOKEN) #
+    return "!", 200
 
+if __name__ == "__main__":
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
